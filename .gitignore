@@ -1,0 +1,22 @@
+# Operating system
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# Editors
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Logs and temporary files
+*.log
+*.tmp
+*.bak
+
+# Local data: do not commit business/customer workbooks
+data/
+*.xlsx
+*.xls
+*.xlsm
+*.csv

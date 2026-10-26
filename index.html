@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Excel to Dashboard Studio</title>
+<script crossorigin="anonymous" src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script crossorigin="anonymous" src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+:root{--accent:#2F4B6E;--accent2:#8FA3BA;--bg:#F6F7F9;--card:#fff;--line:#E3E6EB;--tx:#1C2330;--mut:#6B7482;--soft:#EEF1F5;--onacc:#fff}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--tx);font:14px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+header{background:var(--card);border-bottom:1px solid var(--line);padding:12px 24px;display:flex;gap:16px;align-items:center;flex-wrap:wrap;position:sticky;top:0;z-index:5}
+header h1{font-size:16px;margin:0;font-weight:650}nav{display:flex;gap:6px;flex-wrap:wrap;margin-left:auto}
+nav button{border:1px solid var(--line);background:var(--card);padding:5px 11px;border-radius:16px;cursor:pointer;color:var(--mut);font-size:12px}
+nav button.on{background:var(--accent);color:var(--onacc);border-color:var(--accent)}
+main{max-width:1280px;margin:0 auto;padding:22px}h2{font-size:18px;margin:0 0 4px}.mut{color:var(--mut)}.sub{margin:0 0 16px;color:var(--mut)}
+.card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:14px 16px;margin-bottom:14px}
+.ch{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:8px;flex-wrap:wrap}
+.btn{background:var(--accent);color:var(--onacc);border:0;padding:8px 16px;border-radius:7px;cursor:pointer;font-size:13px}.btn.ghost{background:var(--card);color:var(--tx);border:1px solid var(--line)}.btn.sm{padding:4px 10px;font-size:12px}
+.btn:hover{opacity:.9}select,input[type=text]{border:1px solid var(--line);border-radius:6px;padding:5px 8px;font-size:13px;background:var(--card);max-width:100%}
+table{border-collapse:collapse;width:100%;font-size:12.5px}th,td{padding:6px 9px;border-bottom:1px solid var(--line);text-align:left;white-space:nowrap}th{color:var(--mut);font-weight:600;position:sticky;top:0;background:var(--card)}
+.scroll{overflow:auto;max-height:330px}.tag{background:var(--soft);border-radius:4px;padding:1px 7px;font-size:11px;color:var(--mut)}
+#drop{border:2px dashed var(--accent2);border-radius:12px;background:var(--card);padding:54px 20px;text-align:center;cursor:pointer}#drop.over{background:var(--soft)}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin:8px 0}.two{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.item{display:flex;justify-content:space-between;gap:10px;align-items:center;padding:7px 0;border-bottom:1px solid var(--line)}.item code{font-size:12px;color:var(--accent);word-break:break-word}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:12px;margin-bottom:14px}
+.kpi{background:var(--card);border:1px solid var(--line);border-left:3px solid var(--accent);border-radius:8px;padding:12px 14px}.kpi small{color:var(--mut);display:block}.kpi b{font-size:26px;font-weight:650;display:block;margin:2px 0}
+.grid{display:grid;grid-template-columns:repeat(12,1fr);gap:14px}.c6{grid-column:span 6}.c4{grid-column:span 4}.c8{grid-column:span 8}.c12{grid-column:span 12}
+.cv{position:relative;height:300px}.chip{background:var(--soft);border-radius:12px;padding:2px 9px;font-size:12px;cursor:pointer;margin-right:5px}
+.sw{display:inline-flex;gap:8px;align-items:center;border:1px solid var(--line);border-radius:8px;padding:7px 11px;cursor:pointer;margin:0 8px 8px 0}.sw i{width:16px;height:16px;border-radius:4px;display:inline-block}
+.ins{margin:0;padding-left:18px}.warn{background:#FFF8E6;border:1px solid #F0DDA8;border-radius:8px;padding:8px 12px;margin:8px 0;font-size:13px}
+#toast{position:fixed;bottom:18px;right:18px;background:#1C2330;color:var(--onacc);padding:10px 14px;border-radius:8px;display:none;max-width:420px;z-index:9}
+@media print{header,.btn,.ha,#toast{display:none!important}.card{break-inside:avoid}body{background:#fff}.hero{-webkit-print-color-adjust:exact;print-color-adjust:exact}}
+@media(max-width:800px){.two{grid-template-columns:1fr}.c6,.c4,.c8{grid-column:span 12}}
+select,input[type=text]{color:var(--tx)}.warn{color:#3b3000}
+.hero{background:var(--accent);color:var(--onacc);border-radius:12px;padding:18px 22px;display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:14px}
+.hero h1{margin:0;font-size:22px;font-weight:700}.hero .hs{opacity:.85;font-size:12px;margin-top:2px}.ha{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+.sl{display:flex;flex-direction:column;gap:2px;font-size:11px;text-transform:uppercase;letter-spacing:.04em;color:var(--mut)}
+.kpi{box-shadow:0 1px 2px rgba(0,0,0,.05)}.c12 .ins{columns:2;column-gap:36px}.c12 .ins li{break-inside:avoid;margin-bottom:6px}
+@media(max-width:800px){.c12 .ins{columns:1}}
+</style></head><body>
+<header><h1>Excel to Dashboard Studio</h1><nav id="nav"></nav></header>
+<main>
+<section class="step" data-s="1" id="s1"><h2>1. Upload your Excel file</h2><p class="sub">Everything is processed locally in your browser. Supports .xlsx, .xls, .xlsm and .csv, with any number of worksheets.</p>
+<div id="drop"><b>Drop your file here or click to browse</b><div class="mut">Each worksheet becomes a table</div><input id="file" type="file" accept=".xlsx,.xls,.xlsm,.csv" hidden></div>
+<div class="row"><button class="btn ghost" onclick="loadSample()">Try with sample data (3 linked sheets)</button></div></section>
+<section class="step" data-s="2" id="s2" hidden></section>
+<section class="step" data-s="3" id="s3" hidden></section>
+<section class="step" data-s="4" id="s4" hidden></section>
+<section class="step" data-s="5" id="s5" hidden></section>
+<section id="dash" hidden></section>
+</main><div id="toast"></div>
+<script>
+const $=s=>document.querySelector(s),esc=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const CF=new Intl.NumberFormat('en',{notation:'compact',maximumFractionDigits:2}),f=v=>isFinite(v)?CF.format(v):'–';
+const PAL={blue:['Corporate Blue','#1F4E8C','#F2A900','#F4F6FA','#FFFFFF','#1A2233','#5F6B7D','#DDE3EC','#EAF0F9',['#1F4E8C','#4F8FD8','#9CC3EE','#F2A900','#7A8CA5','#C9D3E0'],'#fff'],
+emerald:['Emerald Finance','#0B7A5A','#E0A526','#F3F8F6','#FFFFFF','#14271F','#5A6F66','#D3E5DE','#E3F1EC',['#0B7A5A','#34B38A','#8FD6BC','#E0A526','#4A6B5F','#C5D9D1'],'#fff'],
+sunset:['Sunset Executive','#C2410C','#1F2937','#FBF7F3','#FFFFFF','#2A1F17','#7A6A5C','#EADBCB','#F6EADF',['#C2410C','#F08A4B','#F7C09A','#1F2937','#7C6F64','#D9CBBE'],'#fff'],
+purple:['Royal Purple','#5B21B6','#14B8A6','#F7F5FC','#FFFFFF','#1F1633','#645A80','#E1DAF2','#EDE8F8',['#5B21B6','#8B5CF6','#C4B5FD','#14B8A6','#6B5E8F','#D8D1EC'],'#fff'],
+crimson:['Crimson Slate','#B91C1C','#334155','#F8F6F6','#FFFFFF','#241818','#6E6060','#E7DADA','#F3E8E8',['#B91C1C','#E36B6B','#F3B5B5','#334155','#8A7A7A','#D9CFCF'],'#fff'],
+dark:['Midnight Dark','#38BDF8','#FBBF24','#0F172A','#1E293B','#E2E8F0','#94A3B8','#334155','#273449',['#38BDF8','#818CF8','#34D399','#FBBF24','#F472B6','#94A3B8'],'#0F172A']};
+const S={tables:{},rels:[],calcs:[],measures:[],kpiSel:[],kpiN:4,pal:'blue',cur:'none',title:'Business Dashboard',filters:{},charts:{},sel:{},step:1,loaded:false};
+function toast(m){const t=$('#toast');t.textContent=m;t.style.display='block';clearTimeout(toast.h);toast.h=setTimeout(()=>t.style.display='none',5000)}
+window.addEventListener('error',e=>toast('Error: '+e.message));window.addEventListener('unhandledrejection',e=>toast('Error: '+(e.reason&&e.reason.message||e.reason)));
+const hexA=(h,a)=>{const n=parseInt(h.slice(1),16);return`rgba(${n>>16},${n>>8&255},${n&255},${a})`};
+/* ---------- loading ---------- */
+function profile(rows,cols){const o={};cols.forEach(c=>{const v=[];for(const r of rows){const x=r[c];if(x!==null&&x!==undefined&&x!=='')v.push(x)}
+const n=v.length;let nu=0,dt=0;const u=new Set(),cnt=new Map();
+for(const x of v){if(typeof x==='number'&&isFinite(x))nu++;else if(x instanceof Date&&!isNaN(x))dt++;const k=x instanceof Date?x.getTime():String(x);u.add(k);cnt.set(k,(cnt.get(k)||0)+1)}
+const type=n&&dt/n>=.9?'date':n&&nu/n>=.9?'number':'text',ratio=n?u.size/n:0;
+const idName=/(^|[\s_.\-])(id|code|key|sku|no|num|number)$/i.test(c)||/[a-z]ID$/.test(c);
+const id=type!=='date'&&((idName&&ratio>.3)||(type==='text'&&n>30&&ratio>.9));
+let sum='';if(type==='number'){let mn=Infinity,mx=-Infinity,s=0;for(const x of v)if(typeof x==='number'){mn=Math.min(mn,x);mx=Math.max(mx,x);s+=x}sum=`min ${f(mn)} · max ${f(mx)} · mean ${f(s/nu)}`}
+else if(type==='date'){let a=Infinity,b=-Infinity;for(const x of v)if(x instanceof Date){a=Math.min(a,+x);b=Math.max(b,+x)}sum=new Date(a).toISOString().slice(0,10)+' to '+new Date(b).toISOString().slice(0,10)}
+else if(n){let bk='',bv=0;cnt.forEach((q,k)=>{if(q>bv){bv=q;bk=k}});sum=`top: ${bk.slice(0,30)} (${bv}×)`}
+o[c]={type,n,unique:u.size,id,key:idName&&type!=='date',sum}});return o}
+function mkTable(rows){const cs=[];rows.slice(0,300).forEach(r=>Object.keys(r).forEach(k=>{if(!cs.includes(k))cs.push(k)}));const keep=cs.filter(c=>rows.some(r=>r[c]!=null&&r[c]!==''));
+const cols=keep.map(c=>String(c).trim()),rr=rows.map(r=>{const o={};keep.forEach((c,i)=>o[cols[i]]=r[c]===undefined?null:r[c]);return o});return{cols,rows:rr,prof:profile(rr,cols),sets:{}}}
+function autoHeader(a){const w=Math.max(0,...a.slice(0,30).map(r=>(r||[]).filter(x=>x!=null&&x!=='').length));for(let i=0;i<Math.min(a.length,30);i++){const ne=(a[i]||[]).filter(x=>x!=null&&x!=='');if(ne.length>=Math.max(1,w*.6)&&ne.filter(x=>typeof x==='string').length>=ne.length*.6)return i}return 0}
+function aoaToRows(a,h){const hd=a[h]||[],mx=Math.max(hd.length,...a.slice(h+1,h+200).map(r=>(r||[]).length)),seen={},names=[];for(let j=0;j<mx;j++){let n=hd[j]==null||hd[j]===''?'Column '+(j+1):String(hd[j]).trim();if(seen[n]){seen[n]++;n+='_'+seen[n]}else seen[n]=1;names.push(n)}
+const rows=[];for(let i=h+1;i<a.length;i++){const r=a[i]||[];if(!r.some(x=>x!=null&&x!==''))continue;const o={};names.forEach((n,j)=>o[n]=r[j]===undefined||r[j]===''?null:r[j]);rows.push(o)}return rows}
+function loadTables(obj,raw){const T={};for(const [name,rows] of Object.entries(obj)){if(!rows||!rows.length)continue;const t=mkTable(rows);if(t.cols.length)T[name]=t}
+if(!Object.keys(T).length)throw new Error('No data found in the file.');
+Object.assign(S,{raw:raw||{},hdr:Object.fromEntries(Object.keys(raw||{}).map(n=>[n,autoHeader(raw[n])])),dirty:false,log:[],tables:T,calcs:[],measures:[],kpiSel:[],filters:{},range:['',''],sel:{},mInit:false,loaded:true,model:null});S.rels=detectRels();
+const tr=Object.values(T).reduce((a,t)=>a+t.rows.length,0);toast(Object.keys(T).length+' worksheet(s) loaded'+(tr>150000?'. Large file ('+tr+' rows): the dashboard may be slow.':''));goStep(2)}
+function loadBuffer(buf){const wb=XLSX.read(buf,{type:'array',cellDates:true}),raw={},o={};wb.SheetNames.forEach(n=>{const a=XLSX.utils.sheet_to_json(wb.Sheets[n],{header:1,defval:null,raw:true});if(a.length<2)return;a.forEach(r=>r&&r.forEach((x,i)=>{if(x instanceof Date&&!isNaN(x))r[i]=new Date(Math.round(+x/36e5)*36e5)}));raw[n]=a;o[n]=aoaToRows(a,autoHeader(a))});loadTables(o,raw)}
+function handleFile(file){if(!file)return;S.src=file.name;S.sample=false;S.at=new Date().toLocaleString();const r=new FileReader();r.onload=()=>{try{loadBuffer(r.result)}catch(e){toast('Could not read file: '+e.message)}};r.onerror=()=>toast('File read failed');r.readAsArrayBuffer(file)}
+function loadSample(){S.src='Built-in sample data';S.sample=true;S.at=new Date().toLocaleString();let s=7;const rnd=()=>(s=(s*16807)%2147483647)/2147483647,pick=a=>a[Math.floor(rnd()*a.length)];
+const cat={Laptop:['Electronics',620],Phone:['Electronics',380],Headset:['Accessories',45],Monitor:['Electronics',190],Desk:['Furniture',140],Chair:['Furniture',95],Notebook:['Stationery',2],Printer:['Electronics',110]};
+const Products=Object.entries(cat).map(([p,[c,u]],i)=>({ProductID:'P'+(100+i),Product:p,Category:c,UnitCost:u}));
+const reg=['North','South','East','West'],seg=['Consumer','Corporate','Small Business'];
+const Customers=Array.from({length:60},(_,i)=>({CustomerID:'C'+(1000+i),Customer:'Customer '+(i+1),Region:pick(reg),Segment:pick(seg)}));
+const Sales=Array.from({length:900},(_,i)=>{const p=pick(Products),q=1+Math.floor(rnd()*8),d=new Date(2024,0,1+Math.floor(rnd()*640));return{OrderID:'O'+(5000+i),OrderDate:d,CustomerID:pick(Customers).CustomerID,ProductID:p.ProductID,Quantity:q,Revenue:Math.round(q*p.UnitCost*(1.15+rnd()*.7)*100)/100}});
+loadTables({Sales,Customers,Products})}
+/* ---------- relationships ---------- */
+const norm=s=>String(s).toLowerCase().replace(/[^a-z0-9]/g,''),keyish=s=>/id|code|key|sku|no$/i.test(s);
+function vset(t,c){const T=S.tables[t];return T.sets[c]||(T.sets[c]=new Set(T.rows.map(r=>r[c]).filter(v=>v!=null).map(String)))}
+function relInfo(a,ca,b,cb){const pa=S.tables[a].prof[ca],pb=S.tables[b].prof[cb];if(!pa||!pb||pa.type==='date'||pb.type==='date')return null;
+const A=vset(a,ca),B=vset(b,cb),m=Math.min(A.size,B.size);if(m<2)return null;let i=0;(A.size<B.size?A:B).forEach(v=>{if((A.size<B.size?B:A).has(v))i++});const ov=i/m;if(ov<.5)return null;
+const au=pa.unique===pa.n,bu=pb.unique===pb.n;let from,to,fk,pk;
+if(bu&&!au){from=a;fk=ca;to=b;pk=cb}else if(au&&!bu){from=b;fk=cb;to=a;pk=ca}else if(S.tables[a].rows.length>=S.tables[b].rows.length){from=a;fk=ca;to=b;pk=cb}else{from=b;fk=cb;to=a;pk=ca}
+return{id:from+'.'+fk+'>'+to+'.'+pk,from,fk,to,pk,on:true,ov}}
+function detectRels(){const N=Object.keys(S.tables),out=[];for(let i=0;i<N.length;i++)for(let j=i+1;j<N.length;j++){let best=null;
+S.tables[N[i]].cols.forEach(ca=>S.tables[N[j]].cols.forEach(cb=>{const x=norm(ca),y=norm(cb);if(x!==y&&!(keyish(ca)&&keyish(cb)&&(x.includes(y)||y.includes(x))))return;const r=relInfo(N[i],ca,N[j],cb);if(r&&(!best||r.ov>best.ov))best=r}));if(best)out.push(best)}return out}
+function buildModel(){const N=Object.keys(S.tables);const fact=N.reduce((a,b)=>S.tables[b].rows.length>S.tables[a].rows.length?b:a);S.fact=fact;S.dupKeys=0;S.unm=0;
+const nm=(t,c)=>t===fact?c:t+'.'+c;const joined=new Set([fact]),used=new Set();const cols=S.tables[fact].cols.map(c=>({name:c,table:fact,src:c}));const rows=S.tables[fact].rows.map(r=>({...r}));
+let go=true;while(go){go=false;for(const r of S.rels.filter(x=>x.on)){if(used.has(r.id))continue;let have,hc,need,nc;
+if(joined.has(r.from)&&!joined.has(r.to)){have=r.from;hc=r.fk;need=r.to;nc=r.pk}else if(joined.has(r.to)&&!joined.has(r.from)){have=r.to;hc=r.pk;need=r.from;nc=r.fk}else continue;
+const T=S.tables[need],idx=new Map();T.rows.forEach(x=>{const k=String(x[nc]);if(!idx.has(k))idx.set(k,x);else S.dupKeys++});const hk=nm(have,hc),add=T.cols.filter(c=>c!==nc);
+rows.forEach(row=>{const m=idx.get(String(row[hk]));if(!m)S.unm++;add.forEach(c=>row[nm(need,c)]=m?m[c]:null)});add.forEach(c=>cols.push({name:nm(need,c),table:need,src:c}));joined.add(need);used.add(r.id);go=true}}
+S.joined=[...joined];S.base={cols,rows};S.calcs=S.calcs.filter(c=>cols.some(x=>x.name===c.a)&&(!c.b||cols.some(x=>x.name===c.b)));applyCalcs()}
+const DN=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'],MN3=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'],DOPS=['year','quarter','month','monthname','day','weekday'];
+function calcVal(c,r){const a=r[c.a],dv=a instanceof Date&&!isNaN(a);
+if(DOPS.includes(c.op)){if(!dv)return null;const y=a.getFullYear(),m=a.getMonth()+1;return{year:String(y),quarter:y+'-Q'+Math.ceil(m/3),month:y+'-'+String(m).padStart(2,'0'),monthname:MN3[m-1],day:String(a.getDate()).padStart(2,'0'),weekday:DN[a.getDay()]}[c.op]}
+if(c.op==='concat'){const z=v=>v==null?'':v instanceof Date?v.toISOString().slice(0,10):String(v);return(z(a)+' '+z(r[c.b])).trim()||null}
+if(c.op==='diffdays'){const b=r[c.b];return dv&&b instanceof Date?Math.round((a-b)/864e5):null}
+if(c.op==='bucket')return typeof a!=='number'?null:a<=c._q[0]?'Low':a<=c._q[1]?'Medium':'High';
+const b=r[c.b];if(typeof a!=='number'||typeof b!=='number')return null;return c.op==='+'?a+b:c.op==='-'?a-b:c.op==='*'?a*b:(b?a/b:null)}
+function applyCalcs(){const rows=S.base.rows.map(r=>({...r})),ci=S.base.cols.slice();S.calcs.forEach(c=>{if(c.op==='bucket'){const v=rows.map(r=>r[c.a]).filter(x=>typeof x==='number').sort((x,y)=>x-y);c._q=[v[Math.floor(.33*(v.length-1))],v[Math.floor(.66*(v.length-1))]]}if(!ci.some(x=>x.name===c.name))ci.push({name:c.name,table:'calc',src:c.name});rows.forEach(r=>r[c.name]=calcVal(c,r))});
+S.model={rows,colInfo:ci,cols:ci.map(c=>c.name)};S.prof=profile(rows,S.model.cols)}
+/* ---------- DAX helpers ---------- */
+function ref(n,row){const c=(S.model?S.model.colInfo:S.base.cols).find(x=>x.name===n);if(!c)return`[${n}]`;const t=c.table==='calc'?S.fact:c.table,s=`'${t}'[${c.src}]`;return row&&t!==S.fact?`RELATED(${s})`:s}
+function calcDax(c){const A=ref(c.a,1),B=c.b?ref(c.b,1):'';const x={year:`YEAR(${A})`,day:`DAY(${A})`,monthname:`FORMAT(${A}, "mmm")`,weekday:`FORMAT(${A}, "ddd")`,diffdays:`DATEDIFF(${B}, ${A}, DAY)`,concat:`${A} & " " & ${B}`,bucket:`IF(${A} <= PERCENTILE.INC(ALL(${ref(c.a)}), 0.33), "Low", IF(${A} <= PERCENTILE.INC(ALL(${ref(c.a)}), 0.66), "Medium", "High"))`,month:`FORMAT(${A}, "yyyy-MM")`,quarter:`YEAR(${A}) & "-Q" & QUARTER(${A})`,'+':`${A} + ${B}`,'-':`${A} - ${B}`,'*':`${A} * ${B}`,'/':`DIVIDE(${A}, ${B})`}[c.op];return`'${S.fact}'[${c.name}] = ${x}`}
+function mDax(m){const x={sum:`SUM(${ref(m.col)})`,avg:`AVERAGE(${ref(m.col)})`,count:`COUNTROWS('${S.fact}')`,dc:`DISTINCTCOUNT(${ref(m.col)})`,max:`MAX(${ref(m.col)})`,min:`MIN(${ref(m.col)})`,ratio:`DIVIDE(SUM(${ref(m.col)}), SUM(${ref(m.col2)}))`}[m.type];return`${m.name} = ${x}`}
+function evalM(m,rows){const nums=c=>{const o=[];for(const r of rows){const v=r[c];if(typeof v==='number'&&isFinite(v))o.push(v)}return o},sm=a=>a.reduce((x,y)=>x+y,0);
+switch(m.type){case'sum':return sm(nums(m.col));case'avg':{const a=nums(m.col);return a.length?sm(a)/a.length:0}case'count':return rows.length;
+case'dc':return new Set(rows.map(r=>r[m.col]).filter(v=>v!=null).map(String)).size;case'max':return nums(m.col).reduce((a,b)=>Math.max(a,b),-Infinity);case'min':return nums(m.col).reduce((a,b)=>Math.min(a,b),Infinity);
+case'ratio':{const b=sm(nums(m.col2));return b?sm(nums(m.col))/b:0}}return 0}
+const cf=v=>{if(!isFinite(v))return'–';const c=S.cur,a=Math.abs(v),g=v<0?'-':'';if(c==='inr'){const u=a>=1e7?[a/1e7,' Cr']:a>=1e5?[a/1e5,' L']:a>=1e3?[a/1e3,' K']:[a,''];return g+'₹'+(+u[0].toFixed(2))+u[1]}return g+(c==='usd'?'$':'€')+CF.format(a)};
+const isMoney=m=>S.cur!=='none'&&m.type!=='count'&&m.type!=='dc'&&/rev|sale|amount|profit|cost|price|income|spend|expense/i.test(m.name+' '+(m.col||''));
+const fv=(m,v)=>m.pct?(isFinite(v)?(v*100).toFixed(1)+'%':'–'):isMoney(m)?cf(v):f(v);
+/* ---------- suggestions ---------- */
+function suggestCalcs(){const P=S.prof,cs=S.model.cols,have=n=>cs.includes(n),L=[],add=c=>{if(!have(c.name)&&!L.some(x=>x.name===c.name))L.push(c)};
+const dcs=cs.filter(c=>P[c].type==='date');dcs.forEach((dc,i)=>{const px=dcs.length>1?dc+' ':'';[['Year','year'],['Quarter','quarter'],['Month','month'],['Month Name','monthname'],['Day','day'],['Weekday','weekday']].forEach(([n,op])=>add({name:px+n,a:dc,op,auto:i===0&&op!=='monthname'}))});if(dcs.length>=2)add({name:'Days '+dcs[0]+' to '+dcs[1],a:dcs[1],b:dcs[0],op:'diffdays'});
+const num=cs.filter(c=>P[c].type==='number'&&!P[c].id),q=num.find(c=>/qty|quant|units/i.test(c)),uc=num.find(c=>/cost|cogs/i.test(c)&&c!==q),up=num.find(c=>/price|rate/i.test(c)),rv=num.find(c=>/rev|sales|amount/i.test(c));
+if(q&&uc)add({name:'Total Cost',a:q,b:uc,op:'*'});if(q&&up&&!rv)add({name:'Total Sales',a:q,b:up,op:'*'});if(rv)add({name:rv+' Band',a:rv,op:'bucket'});
+const cost=num.concat(cs.filter(c=>S.calcs.some(k=>k.name===c))).find(c=>/^total cost|expense|cogs/i.test(c)),rv2=rv||(have('Total Sales')?'Total Sales':null);
+if(rv2&&cost&&rv2!==cost){add({name:'Profit',a:rv2,b:cost,op:'-'});if(have('Profit'))add({name:'Profit Margin',a:'Profit',b:rv2,op:'/'})}return L}
+function suggestM(){const P=S.prof,cs=S.model.cols,num=cs.filter(c=>P[c].type==='number'&&!P[c].id&&!P[c].key),idc=cs.filter(c=>P[c].id||P[c].key),L=[],add=m=>{if(!L.some(x=>x.name===m.name))L.push(m)};
+const mon=num.filter(c=>/rev|sale|amount|profit|income|total|value|spend/i.test(c)),ord=[...mon,...num.filter(c=>!mon.includes(c))],sc=ord.filter(c=>!/unit|price|rate/i.test(c));
+const tn=c=>/^total/i.test(c)?c:'Total '+c;sc.slice(0,3).forEach(c=>add({name:tn(c),type:'sum',col:c}));
+const rv=num.find(c=>/rev|sales|amount/i.test(c)),pf=num.find(c=>/profit/i.test(c));if(rv&&pf&&rv!==pf)add({name:'Profit Margin %',type:'ratio',col:pf,col2:rv,pct:1});
+add({name:'Row Count',type:'count'});idc.slice(0,2).forEach(c=>add({name:'Distinct '+c,type:'dc',col:c}));
+sc.slice(0,4).forEach(c=>add({name:'Avg '+c,type:'avg',col:c}));sc.slice(3,6).forEach(c=>add({name:tn(c),type:'sum',col:c}));return L}
+function initMeasures(){if(!S.mInit){for(let i=0;i<6;i++){const q=suggestCalcs().filter(c=>c.auto||['*','-','+'].includes(c.op));if(!q.length)break;S.calcs.push(...q);applyCalcs()}S.measures=suggestM().slice(0,8);S.mInit=true;S.kpiSel=[]}const cs=S.model.cols;S.measures=S.measures.filter(m=>(!m.col||cs.includes(m.col))&&(!m.col2||cs.includes(m.col2)))}
+/* ---------- navigation ---------- */
+const STEPS=['Upload','Explore','Relationships','Columns & Measures','Design'];
+function goStep(n){if(n>1&&!S.loaded)return toast('Upload a file first');if(n>=3&&S.dirty){S.rels=detectRels();S.mInit=false;S.kpiSel=[];S.dirty=false;S.model=null}if(n>=4){try{buildModel();initMeasures()}catch(e){return toast('Model error: '+e.message)}}
+S.step=n;Object.values(S.charts).forEach(c=>c.destroy());S.charts={};document.querySelectorAll('.step').forEach(e=>e.hidden=e.dataset.s!=n);$('#dash').hidden=true;
+$('#nav').innerHTML=STEPS.map((s,i)=>`<button class="${i+1==n?'on':''}" data-go="${i+1}">${i+1}. ${s}</button>`).join('')+(S.loaded?'<button data-go="6">Dashboard</button>':'');
+({2:r2,3:r3,4:r4,5:r5})[n]&&({2:r2,3:r3,4:r4,5:r5})[n]();window.scrollTo(0,0)}
+const navBtns=(b,nx,l)=>`<div class="row">${b?`<button class="btn ghost" data-go="${b}">Back</button>`:''}<button class="btn" data-go="${nx}">${l||'Next'}</button></div>`;
+/* step 2 */
+const OPS=`<option value="">Clean…</option><optgroup label="Convert"><option value="num">To number (strip ₹ $ , %)</option><option value="date_dmy">To date (day/month/year)</option><option value="date_mdy">To date (month/day/year)</option><option value="date_auto">To date (auto)</option><option value="text">To text</option></optgroup><optgroup label="Text"><option value="trim">Trim extra spaces</option><option value="upper">UPPER CASE</option><option value="lower">lower case</option><option value="proper">Proper Case</option></optgroup><optgroup label="Fill blanks"><option value="fill_zero">With 0</option><option value="fill_mean">With mean</option><option value="fill_median">With median</option><option value="fill_mode">With most common</option><option value="fill_unknown">With Unknown</option><option value="fill_prev">With previous value</option></optgroup><optgroup label="Fix"><option value="cap">Cap outliers (IQR)</option><option value="dropblank">Remove rows where blank</option><option value="drop">Drop column</option></optgroup>`;
+const cell=v=>v instanceof Date?v.toISOString().slice(0,10):v==null?'':typeof v==='number'?Math.round(v*100)/100:v;
+const parseNum=v=>{if(typeof v==='number')return v;if(v==null)return null;let x=String(v).trim();if(!x)return null;const neg=/^\(.*\)$/.test(x)||/^[-−]/.test(x);x=x.replace(/[^0-9.]/g,'');if(!x)return null;const n=parseFloat(x);return isNaN(n)?null:neg?-n:n};
+const parseDate=(v,mode)=>{if(v instanceof Date)return v;if(v==null||v==='')return null;if(typeof v==='number'&&v>20000&&v<80000){const d=new Date(Math.round((v-25569)*864e5));return new Date(d.getUTCFullYear(),d.getUTCMonth(),d.getUTCDate())}
+const x=String(v).trim(),m=x.match(/^(\d{1,4})[\/\-.](\d{1,2})[\/\-.](\d{1,4})/);if(m&&(mode!=='auto'||+m[1]>31)){const a=+m[1],b=+m[2],c=+m[3];let y,mo,d;if(a>31){y=a;mo=b;d=c}else if(mode==='dmy'){d=a;mo=b;y=c}else{mo=a;d=b;y=c}if(y<100)y+=2000;const dt=new Date(y,mo-1,d);return dt.getMonth()===mo-1?dt:null}
+const t=Date.parse(x);return isNaN(t)?null:new Date(t)};
+function refresh(tn,msg){const t=S.tables[tn];t.prof=profile(t.rows,t.cols);t.sets={};S.dirty=true;if(msg)S.log.push(tn+' › '+msg);r2()}
+function cleanOp(tn,c,op){const t=S.tables[tn],R=t.rows,blank=v=>v==null||v==='',nm=R.map(r=>r[c]).filter(v=>typeof v==='number'&&isFinite(v)).sort((a,b)=>a-b),each=fn=>R.forEach(r=>{r[c]=fn(r[c])}),q=p=>nm.length?nm[Math.min(nm.length-1,Math.floor(p*(nm.length-1)))]:0;
+const mode=()=>{const m=new Map();R.forEach(r=>{const v=r[c];if(!blank(v)){const k=v instanceof Date?+v:v;m.set(k,(m.get(k)||0)+1)}});let b=null,n=0;m.forEach((x,k)=>{if(x>n){n=x;b=k}});return b};
+switch(op){case'num':each(parseNum);break;case'date_dmy':each(v=>parseDate(v,'dmy'));break;case'date_mdy':each(v=>parseDate(v,'mdy'));break;case'date_auto':each(v=>parseDate(v,'auto'));break;
+case'text':each(v=>v==null?null:v instanceof Date?v.toISOString().slice(0,10):String(v));break;case'trim':each(v=>typeof v==='string'?(v.replace(/\s+/g,' ').trim()||null):v);break;
+case'upper':each(v=>typeof v==='string'?v.toUpperCase():v);break;case'lower':each(v=>typeof v==='string'?v.toLowerCase():v);break;
+case'proper':each(v=>typeof v==='string'?v.toLowerCase().replace(/(^|[\s\-'])([a-z])/g,(a,b,d)=>b+d.toUpperCase()):v);break;
+case'fill_zero':each(v=>blank(v)?0:v);break;case'fill_mean':{const m=nm.length?nm.reduce((a,b)=>a+b,0)/nm.length:0;each(v=>blank(v)?m:v);break}case'fill_median':{const m=q(.5);each(v=>blank(v)?m:v);break}
+case'fill_mode':{const m=mode();each(v=>blank(v)?m:v);break}case'fill_unknown':each(v=>blank(v)?'Unknown':v);break;case'fill_prev':{let p=null;each(v=>{if(blank(v))return p;p=v;return v});break}
+case'cap':{const q1=q(.25),q3=q(.75),i=q3-q1,lo=q1-1.5*i,hi=q3+1.5*i;each(v=>typeof v==='number'?Math.min(hi,Math.max(lo,v)):v);break}
+case'dropblank':t.rows=R.filter(r=>!blank(r[c]));break;case'drop':R.forEach(r=>{delete r[c]});t.cols=t.cols.filter(x=>x!==c);break}
+refresh(tn,c+': '+((OPS.match(new RegExp('value="'+op+'">([^<]*)'))||[])[1]||op))}
+function tableOp(tn,op){const t=S.tables[tn];let m='';
+if(op==='dedupe'){const seen=new Set(),b=t.rows.length;t.rows=t.rows.filter(r=>{const k=t.cols.map(c=>r[c] instanceof Date?+r[c]:r[c]).join('\u0001');if(seen.has(k))return false;seen.add(k);return true});m='removed '+(b-t.rows.length)+' duplicate rows'}
+else if(op==='totals'){const b=t.rows.length;const bk=v=>v==null||v==='';t.rows=t.rows.filter(r=>!(t.cols.slice(0,2).some(c=>typeof r[c]==='string'&&/^\s*(grand\s*|sub\s*)?total/i.test(r[c]))||(t.cols.length>2&&bk(r[t.cols[0]])&&bk(r[t.cols[1]]))));m='removed '+(b-t.rows.length)+' total/subtotal rows'}
+else if(op==='reset'){const a=S.raw[tn];S.hdr[tn]=autoHeader(a);S.tables[tn]=mkTable(aoaToRows(a,S.hdr[tn]));m='reset to original'}
+refresh(tn,m)}
+function setHeader(tn,i){S.hdr[tn]=i;S.tables[tn]=mkTable(aoaToRows(S.raw[tn],i));refresh(tn,'header row set to '+(i+1))}
+function renameCol(tn,c,n){const t=S.tables[tn];if(!n||n===c)return;if(t.cols.includes(n))return toast('Column name already exists');t.rows.forEach(r=>{r[n]=r[c];delete r[c]});t.cols=t.cols.map(x=>x===c?n:x);refresh(tn,'renamed '+c+' → '+n)}
+function r2(){$('#s2').innerHTML=`<h2>2. Explore and clean your data</h2><p class="sub">Header rows are detected automatically. Fix types, blanks, duplicates and text issues here. Every change is logged and the data is re-checked.</p>`+Object.entries(S.tables).map(([n,t])=>{const raw=S.raw[n],nul=t.cols.filter(c=>t.prof[c].n<t.rows.length*.95).length,e=esc(n);
+return`<div class="card"><div class="ch"><b>${e}</b><span class="mut">${t.rows.length} rows · ${t.cols.length} columns${nul?' · '+nul+' with over 5% blanks':''}</span></div>
+<div class="row">${raw?`<label class="mut">Header row <select data-hdr="${e}">${raw.slice(0,15).map((_,i)=>`<option value="${i}" ${S.hdr[n]===i?'selected':''}>${i+1}</option>`).join('')}</select></label>`:''}<button class="btn ghost sm" data-tact="dedupe" data-t="${e}">Remove duplicate rows</button><button class="btn ghost sm" data-tact="totals" data-t="${e}">Remove total rows</button>${raw?`<button class="btn ghost sm" data-tact="reset" data-t="${e}">Reset sheet</button>`:''}</div>
+<details><summary class="mut">Preview first 5 rows</summary><div class="scroll"><table><thead><tr>${t.cols.map(c=>`<th>${esc(c)}</th>`).join('')}</tr></thead><tbody>${t.rows.slice(0,5).map(r=>`<tr>${t.cols.map(c=>`<td>${esc(cell(r[c]))}</td>`).join('')}</tr>`).join('')}</tbody></table></div></details>
+<div class="scroll"><table><thead><tr><th>Column (rename)</th><th>Type</th><th>Filled</th><th>Unique</th><th>Profile</th><th>Clean</th></tr></thead><tbody>${t.cols.map(c=>{const p=t.prof[c];return`<tr><td><input type="text" value="${esc(c)}" data-ren="${esc(c)}" data-t="${e}" style="width:150px"></td><td><span class="tag">${p.id?'key / id':p.type}</span></td><td>${t.rows.length?Math.round(100*p.n/t.rows.length):0}%</td><td>${p.unique}</td><td class="mut">${esc(p.sum)}</td><td><select data-cop="${esc(c)}" data-t="${e}">${OPS}</select></td></tr>`}).join('')}</tbody></table></div></div>`}).join('')+(S.log.length?`<div class="card"><b>Cleaning log</b><ul class="ins">${S.log.map(x=>`<li>${esc(x)}</li>`).join('')}</ul></div>`:'')+navBtns(1,3)}
+/* step 3 */
+function r3(){const N=Object.keys(S.tables),opt=(t)=>S.tables[t].cols.map(c=>`<option>${esc(c)}</option>`).join(''),to=N.map(n=>`<option>${esc(n)}</option>`).join('');
+$('#s3').innerHTML=`<h2>3. Relationships between worksheets</h2><p class="sub">Detected by matching key columns and value overlap. Linked sheets are merged into one model so charts can mix columns from any sheet.</p>
+<div class="card">${S.rels.length?S.rels.map((r,i)=>`<div class="item"><label><input type="checkbox" data-rel="${i}" ${r.on?'checked':''}> <code>${esc(r.from)}[${esc(r.fk)}]</code> (many) → <code>${esc(r.to)}[${esc(r.pk)}]</code> (one) <span class="tag">${Math.round(r.ov*100)}% match</span></label><button class="btn ghost sm" data-delrel="${i}">Remove</button></div>`).join(''):'<div class="warn">No relationships were detected automatically. Add one below, or continue with the largest sheet only.</div>'}</div>
+<div class="card"><b>Add a relationship manually</b><div class="row"><select id="rf">${to}</select><select id="rfc">${opt(N[0])}</select><span>→</span><select id="rt">${to}</select><select id="rtc">${opt(N[N.length>1?1:0])}</select><button class="btn sm" onclick="addRel()">Add</button></div></div>
+${N.length>1&&S.rels.length<N.length-1?'<div class="warn">Some sheets are not linked to the main table and will be left out of the dashboard.</div>':''}`+navBtns(2,4)}
+function addRel(){const a=$('#rf').value,ca=$('#rfc').value,b=$('#rt').value,cb=$('#rtc').value;if(a===b)return toast('Choose two different sheets');const r=relInfo(a,ca,b,cb);if(!r)return toast('Those columns share too few matching values');if(S.rels.some(x=>x.id===r.id))return toast('Already exists');S.rels.push(r);r3()}
+/* step 4 */
+function r4(){const M=S.measures,C=S.calcs,cols=S.model.cols,opts=cols.map(c=>`<option>${esc(c)}</option>`).join(''),sc=suggestCalcs(),sm=suggestM().filter(m=>!M.some(x=>x.name===m.name));
+const calcRow=(c,i,a)=>`<div class="item"><div><b>${esc(c.name)}</b><br><code>${esc(calcDax(c))}</code></div><button class="btn ${a?'':'ghost'} sm" data-${a?'addcalc':'delcalc'}="${i}">${a?'Add':'Remove'}</button></div>`;
+const mRow=(m,i,a)=>`<div class="item"><div><b>${esc(m.name)}</b><br><code>${esc(mDax(m))}</code></div><button class="btn ${a?'':'ghost'} sm" data-${a?'addm':'delm'}="${i}">${a?'Add':'Remove'}</button></div>`;
+window._sc=sc;window._sm=sm;
+$('#s4').innerHTML=`<h2>4. Calculated columns and measures</h2><p class="sub">Model: <b>${esc(S.fact)}</b> as main table, ${S.joined.length} sheet(s) linked, ${S.model.rows.length} rows, ${cols.length} columns. Suggestions come with DAX formulas you can paste into Power BI.</p>
+<div class="two"><div><div class="card"><b>Suggested columns</b>${sc.length?sc.map((c,i)=>calcRow(c,i,1)).join(''):'<div class="mut">No more suggestions</div>'}</div>
+<div class="card"><b>Your calculated columns</b>${C.length?C.map((c,i)=>calcRow(c,i,0)).join(''):'<div class="mut">None yet</div>'}</div>
+<div class="card"><b>Custom column</b><div class="row"><input type="text" id="ccn" placeholder="Column name"><select id="cco"><option value="year">Year of</option><option value="quarter">Quarter of</option><option value="month">Month of</option><option value="monthname">Month name of</option><option value="day">Day of</option><option value="weekday">Weekday of</option><option value="diffdays">Days: A − B</option><option value="concat">Join text A + B</option><option value="bucket">Low/Med/High band of</option><option value="+">A + B</option><option value="-">A − B</option><option value="*">A × B</option><option value="/">A ÷ B</option></select></div><div class="row"><select id="cca">${opts}</select><select id="ccb">${opts}</select><button class="btn sm" onclick="addCustomCol()">Add</button></div></div></div>
+<div><div class="card"><b>Suggested measures</b>${sm.length?sm.map((m,i)=>mRow(m,i,1)).join(''):'<div class="mut">No more suggestions</div>'}</div>
+<div class="card"><b>Your measures</b>${M.length?M.map((m,i)=>mRow(m,i,0)).join(''):'<div class="mut">None yet</div>'}</div>
+<div class="card"><b>Custom measure</b><div class="row"><input type="text" id="cmn" placeholder="Measure name"><select id="cmt"><option value="sum">SUM</option><option value="avg">AVERAGE</option><option value="dc">DISTINCTCOUNT</option><option value="max">MAX</option><option value="min">MIN</option><option value="ratio">DIVIDE(SUM A, SUM B)</option></select></div><div class="row"><select id="cmc">${opts}</select><select id="cmd">${opts}</select><button class="btn sm" onclick="addCustomM()">Add</button></div></div></div></div>`+navBtns(3,5)}
+function addCustomCol(){const name=$('#ccn').value.trim(),op=$('#cco').value,a=$('#cca').value,b=$('#ccb').value,P=S.prof,dt=DOPS.includes(op),one=dt||op==='bucket';
+if(!name)return toast('Enter a column name');if(S.model.cols.includes(name))return toast('Name already used');if(dt&&P[a].type!=='date')return toast('Column A must be a date column');if(op==='diffdays'&&(P[a].type!=='date'||P[b].type!=='date'))return toast('Both must be date columns');if(op==='bucket'&&P[a].type!=='number')return toast('Column A must be numeric');if(['+','-','*','/'].includes(op)&&(P[a].type!=='number'||P[b].type!=='number'))return toast('Both columns must be numeric');
+S.calcs.push({name,a,b:one?null:b,op});applyCalcs();r4()}
+function addCustomM(){const name=$('#cmn').value.trim(),type=$('#cmt').value,col=$('#cmc').value,col2=$('#cmd').value,P=S.prof;if(!name)return toast('Enter a measure name');if(S.measures.some(m=>m.name===name))return toast('Name already used');
+if(type!=='dc'&&P[col].type!=='number')return toast('Column A must be numeric');if(type==='ratio'&&P[col2].type!=='number')return toast('Column B must be numeric');S.measures.push({name,type,col,col2:type==='ratio'?col2:undefined,pct:type==='ratio'?1:undefined});r4()}
+/* step 5 */
+function r5(){if(!S.kpiSel.length)S.kpiSel=S.measures.slice(0,S.kpiN).map(m=>m.name);
+$('#s5').innerHTML=`<h2>5. Design your dashboard</h2><p class="sub">Choose the KPI count, the exact KPIs and a colour theme.</p>
+<div class="card"><div class="row"><b>Title</b><input type="text" id="ttl" value="${esc(S.title)}" style="width:260px"><b>Currency</b><select id="cur">${[['none','None'],['inr','₹ Rupee (K / L / Cr)'],['usd','$ Dollar'],['eur','€ Euro']].map(o=>`<option value="${o[0]}" ${S.cur===o[0]?'selected':''}>${o[1]}</option>`).join('')}</select><b>Number of KPI cards</b><select id="kn">${[4,5].map(n=>`<option ${n==S.kpiN?'selected':''}>${n}</option>`).join('')}</select></div>
+<div class="mut" id="kcount"></div><div>${S.measures.map(m=>`<div class="item"><label><input type="checkbox" data-kpi="${esc(m.name)}" ${S.kpiSel.includes(m.name)?'checked':''}> <b>${esc(m.name)}</b></label><code>${esc(mDax(m))}</code></div>`).join('')}</div></div>
+<div class="card"><b>Colour theme</b> <span class="mut">(six distinct looks, switchable later on the dashboard)</span><div class="row">${Object.entries(PAL).map(([k,p])=>`<label class="sw"><input type="radio" name="pal" value="${k}" ${S.pal===k?'checked':''}>${p[9].slice(0,4).map(c=>`<i style="background:${c}"></i>`).join('')}${p[0]}</label>`).join('')}</div></div>
+<div class="row"><button class="btn ghost" data-go="4">Back</button><button class="btn" data-go="6">Generate dashboard</button></div>`;kcount()}
+function kcount(){const e=$('#kcount');if(e)e.textContent=`${S.kpiSel.length} of ${S.kpiN} selected${S.kpiSel.length<S.kpiN?' (remaining will be auto-filled)':S.kpiSel.length>S.kpiN?' (first '+S.kpiN+' will be used)':''}`}
+/* dashboard */
+const dims=()=>S.model.cols.filter(c=>{const p=S.prof[c];return p.type==='text'&&!p.id&&!p.key&&p.unique>=2&&p.unique<=200&&!S.calcs.some(k=>k.name===c&&k.op==='day')});
+const filtered=()=>{const ks=Object.keys(S.filters).filter(k=>S.filters[k].size);let r=S.model.rows;if(ks.length)r=r.filter(x=>ks.every(k=>S.filters[k].has(dv(x[k]))));const [a,b]=S.range||[];if(S.sel.t&&(a||b))r=r.filter(x=>{const k=dkey(x[S.sel.t],'month');return k&&(!a||k>=a)&&(!b||k<=b)});return r};
+function exportCSV(){const cs=S.model.cols,q=v=>{const ty=typeof v;v=v instanceof Date?v.toISOString().slice(0,10):v==null?'':String(v);if(ty==='string'&&/^[=+\-@\t\r]/.test(v))v="'"+v;return/[",\n]/.test(v)?'"'+v.replace(/"/g,'""')+'"':v};const t=[cs.map(q).join(','),...filtered().map(r=>cs.map(c=>q(r[c])).join(','))].join('\n');const a=document.createElement('a');a.href=URL.createObjectURL(new Blob(['\ufeff'+t],{type:'text/csv'}));a.download='dashboard_data.csv';a.click()}
+const dv=v=>v==null||v===''?'(Blank)':String(v);const groupBy=(rows,fn)=>{const m=new Map();rows.forEach(r=>{const k=fn(r);if(k==null||k==='')return;let a=m.get(k);if(!a)m.set(k,a=[]);a.push(r)});return m};
+const dkey=(d,g)=>{if(!(d instanceof Date)||isNaN(d))return null;const y=d.getFullYear(),m=d.getMonth()+1;return g==='year'?String(y):g==='quarter'?y+'-Q'+Math.ceil(m/3):y+'-'+String(m).padStart(2,'0')};
+function resolveKpis(){const a=S.kpiSel.filter(n=>S.measures.some(m=>m.name===n));S.measures.forEach(m=>{if(a.length<S.kpiN&&!a.includes(m.name))a.push(m.name)});S.kpiSel=a.slice(0,S.kpiN);return S.kpiSel.map(n=>S.measures.find(m=>m.name===n))}
+function showDash(){S.step=6;document.querySelectorAll('.step').forEach(e=>e.hidden=true);$('#dash').hidden=false;$('#nav').innerHTML=STEPS.map((s,i)=>`<button data-go="${i+1}">${i+1}. ${s}</button>`).join('')+'<button class="on">Dashboard</button>';renderDash();window.scrollTo(0,0)}
+const selH=(k,opts,v)=>`<select data-k="${k}">${opts.map(o=>`<option ${o===v?'selected':''}>${esc(o)}</option>`).join('')}</select>`;
+function renderDash(){Object.values(S.charts).forEach(c=>c.destroy());S.charts={};const D=dims(),rows=filtered(),K=resolveKpis(),all=S.model.rows,sel=S.sel,P=PAL[S.pal];
+[['accent',1],['accent2',2],['bg',3],['card',4],['tx',5],['mut',6],['line',7],['soft',8],['onacc',10]].forEach(([k,i])=>document.documentElement.style.setProperty('--'+k,P[i]));
+const MN=S.measures.map(m=>m.name),getM=n=>S.measures.find(m=>m.name===n)||K[0],add=S.measures.filter(m=>m.type==='sum'||m.type==='count').map(m=>m.name);
+if(!D.includes(sel.d1))sel.d1=D[0];if(!D.includes(sel.d2))sel.d2=D[1]||D[0];if(!D.includes(sel.d3))sel.d3=D[2]||D[1]||D[0];
+const ok=(k,l,d)=>{if(!l.includes(sel[k]))sel[k]=d};ok('m1',MN,K[0].name);ok('m2',MN,K[0].name);ok('m3',add,add.includes(K[0].name)?K[0].name:add[0]);ok('m4',add,add.includes(K[0].name)?K[0].name:add[0]);
+const dts=S.model.cols.filter(c=>S.prof[c].type==='date');if(!dts.includes(sel.t))sel.t=dts[0];if(!sel.g)sel.g='month';
+const fk=Object.keys(S.filters).filter(k=>S.filters[k].size);
+const mons=sel.t?[...new Set(all.map(r=>dkey(r[sel.t],'month')).filter(Boolean))].sort():[],rg=S.range||['',''];
+const rsel=i=>`<select data-range="${i}"><option value="">${i?'Latest':'Earliest'}</option>${mons.map(x=>`<option ${rg[i]===x?'selected':''}>${x}</option>`).join('')}</select>`;
+const rangeH=mons.length?`<label class="mut">Period ${rsel(0)} to ${rsel(1)}</label>`:'';
+const empty=rows.length?'':'<div class="warn">No records match the current filters. Click Reset filters.</div>',bl=S.model.cols.filter(c=>S.prof[c].n<all.length*.9),dq=bl.length?`<div class="warn">Data quality: ${bl.length} column(s) have over 10% blanks (${bl.slice(0,4).map(esc).join(', ')}). Totals may under-count.</div>`:'';
+const slic=D.filter(c=>S.prof[c].unique<=40).slice(0,4).map(c=>{const vals=[...new Set(all.map(r=>r[c]).filter(v=>v!=null).map(String))].sort();const cur=S.filters[c];return`<label class="sl">${esc(c)}<select data-slicer="${esc(c)}"><option value="">All</option>${vals.map(v=>`<option ${cur&&cur.size===1&&cur.has(v)?'selected':''}>${esc(v)}</option>`).join('')}</select></label>`}).join(' ');
+const chips=fk.map(k=>[...S.filters[k]].map(v=>`<span class="chip" data-rm="${esc(k)}" data-v="${esc(v)}">${esc(k)}: ${esc(v)} ✕</span>`).join('')).join('');
+const fa=fk.length||(S.range&&(S.range[0]||S.range[1]));
+const mxd=sel.t?all.reduce((q,r)=>r[sel.t] instanceof Date&&+r[sel.t]>q?+r[sel.t]:q,0):0,md=mxd?new Date(mxd):null,pk0=md&&md.getDate()<new Date(md.getFullYear(),md.getMonth()+1,0).getDate()?dkey(md,'month'):null;
+const ser=m=>sel.t?[...groupBy(rows,r=>dkey(r[sel.t],'month'))].filter(x=>x[0]!==pk0).sort((a,b)=>a[0]<b[0]?-1:1).map(([k,a])=>evalM(m,a)):[];
+const spark=a=>{if(a.length<2)return'';const mn=Math.min(...a),mx=Math.max(...a),r=(mx-mn)||1;return`<svg viewBox="0 0 100 26" width="100%" height="26" preserveAspectRatio="none"><polyline fill="none" stroke="${P[2]}" stroke-width="1.8" points="${a.map((v,i)=>(i/(a.length-1)*100).toFixed(1)+','+(24-(v-mn)/r*22).toFixed(1)).join(' ')}"/></svg>`};
+const kp=K.map(m=>{const v=evalM(m,rows),tot=evalM(m,all),a=ser(m),n=a.length;let dl='';
+if(n>=2&&(m.pct||a[n-2])){const d=m.pct?(a[n-1]-a[n-2])*100:(a[n-1]/a[n-2]-1)*100,bad=/cost|expense|return|churn|loss/i.test(m.name),good=bad?d<0:d>0;dl=`<span style="color:${Math.abs(d)<.05?'#6B7482':good?'#2E7D5B':'#B04A4A'}">${d>=0?'▲':'▼'} ${Math.abs(d).toFixed(1)}${m.pct?' pp':'%'}</span> last full month vs prior`}
+const sh=fa&&(m.type==='sum'||m.type==='count')&&tot?` · ${(v/tot*100).toFixed(1)}% of total`:'';
+return`<div class="kpi"><small>${esc(m.name)}</small><b>${fv(m,v)}</b><small>${dl}</small>${spark(a)}<small>${fa?'Filtered view'+sh:'All data'}</small></div>`}).join('');
+const card=(sp,t,ctrl,id)=>`<div class="card ${sp}"><div class="ch"><b>${t}</b><span>${ctrl}</span></div><div class="cv">${id?`<canvas id="${id}" role="img" aria-label="${esc(t)}"></canvas>`:'<div class="warn">'+(t==='Trend over time'?'No date column detected, so no trend can be drawn. Go to Step 2, find your date column and choose Clean: To date (day/month/year or month/day/year). Then rebuild the dashboard.':'No suitable category column found for this chart.')+'</div>'}</div></div>`;
+$('#dash').innerHTML=`<div class="hero"><div><h1>${esc(S.title)}</h1><div class="hs">${esc(S.src||'')} · ${all.length} records${md?' · data up to '+md.toISOString().slice(0,10):''}</div></div><span class="ha"><select data-pal aria-label="Colour theme">${Object.entries(PAL).map(([k,q])=>`<option value="${k}" ${S.pal===k?'selected':''}>${q[0]}</option>`).join('')}</select> <button class="btn ghost sm" data-go="5">Edit design</button> <button class="btn ghost sm" data-go="1">Upload new file</button> <button class="btn ghost sm" data-act="clear">Reset filters</button> <button class="btn ghost sm" data-act="csv">Export CSV</button> <button class="btn ghost sm" data-act="print">Print / PDF</button></span></div>
+${S.sample?'<div class="warn"><b>Sample data</b>: figures are illustrative, not real.</div>':''}${dq}${(S.dupKeys||S.unm)?`<div class="warn">Join check: ${S.unm||0} row(s) have no match in a linked sheet (shown as Blank) and ${S.dupKeys||0} duplicate key(s) exist in lookup sheets (first match used). Review Step 3.</div>`:''}${empty}<div class="card"><div class="row">${rangeH} ${slic||'<span class="mut">No suitable category columns for filters</span>'}</div><div>${chips||'<span class="mut">Tip: click any bar or slice to cross-filter the whole dashboard.</span>'}</div></div>
+<div class="kpis">${kp}</div><div class="grid">
+${card('c6','Top categories',selH('d1',D,sel.d1)+selH('m1',MN,sel.m1),D.length?'cA':'')}
+${card('c6','Trend over time',(dts.length?selH('t',dts,sel.t)+selH('g',['month','quarter','year'],sel.g)+selH('m2',MN,sel.m2):''),dts.length?'cB':'')}
+${card('c6','Share by category',selH('d2',D,sel.d2)+selH('m3',add,sel.m3),D.length?'cC':'')}
+${card('c6','Pareto (80/20)',selH('d3',D,sel.d3)+selH('m4',add,sel.m4),D.length?'cD':'')}
+<div class="card c12"><div class="ch"><b>Key insights</b></div><ul class="ins" id="ins"></ul></div>
+<div class="card c12"><div class="ch"><b>Detail records</b><span class="mut">${rows.length} of ${all.length} rows (first 50)</span></div><div class="scroll"><table><thead><tr>${S.model.cols.slice(0,10).map(c=>`<th>${esc(c)}</th>`).join('')}</tr></thead><tbody>${rows.slice(0,50).map(r=>`<tr>${S.model.cols.slice(0,10).map(c=>`<td>${esc(r[c] instanceof Date?r[c].toISOString().slice(0,10):typeof r[c]==='number'?Math.round(r[c]*100)/100:r[c])}</td>`).join('')}</tr>`).join('')}</tbody></table></div></div><div class="card c12 mut" style="font-size:12px"><b>Data notes</b><br>Source: ${esc(S.src||'n/a')} · Loaded ${esc(S.at||'')} · Main table: ${esc(S.fact)} · ${all.length} records · ${S.log.length} cleaning step(s) applied · Filters: ${fa?'active':'none'}.${S.sample?' <b>Sample data, not real figures.</b>':''} KPI change compares the last full month with the prior month; partial months are excluded. Blank category values are grouped as (Blank).</div></div>`;
+if(typeof Chart==='undefined'){$('#ins').innerHTML='<li>Chart library failed to load. Check your internet connection.</li>';return}
+Chart.defaults.font.family='system-ui,sans-serif';Chart.defaults.color=P[6];const ins=[],ax={grid:{color:P[7]},border:{display:false}};
+const top=(d,m,n)=>[...groupBy(rows,r=>dv(r[d]))].map(([k,g])=>[k,evalM(m,g)]).sort((a,b)=>b[1]-a[1]).slice(0,n);
+const mk=(id,cfg)=>{const el=document.getElementById(id);if(el)S.charts[id]=new Chart(el,cfg)};
+const barCfg=(d,m,n,hz)=>{const t=top(d,m,n),act=S.filters[d];return{type:'bar',data:{labels:t.map(x=>x[0]),datasets:[{data:t.map(x=>x[1]),backgroundColor:t.map(x=>act&&act.size&&!act.has(x[0])?hexA(P[1],.3):P[1]),borderRadius:3}]},
+options:{indexAxis:hz?'y':'x',responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>' '+fv(m,c.parsed[hz?'x':'y'])}}},scales:{x:{...ax,ticks:hz?{callback:v=>fv(m,v)}:{}},y:{...ax,ticks:hz?{}:{callback:v=>fv(m,v)}}},onClick:(e,el)=>{if(el.length){const v=t[el[0].index][0];setTimeout(()=>toggle(d,v),0)}}}}};
+if(D.length){const m1=getM(sel.m1),t=top(sel.d1,m1,10);mk('cA',barCfg(sel.d1,m1,10,false));if(t.length){const tot=evalM(m1,rows);ins.push(`<b>${esc(t[0][0])}</b> leads ${esc(sel.d1)} on ${esc(m1.name)} (${fv(m1,t[0][1])}${(m1.type==='sum'||m1.type==='count')&&tot?', '+(t[0][1]/tot*100).toFixed(1)+'% of total':''}).`);
+if(t.length>=3&&(m1.type==='sum'||m1.type==='count')&&tot)ins.push(`Top 3 ${esc(sel.d1)} values contribute ${(t.slice(0,3).reduce((a,b)=>a+b[1],0)/tot*100).toFixed(0)}% of ${esc(m1.name)}.`)}
+const m3=getM(sel.m3),t3=(()=>{const a=top(sel.d2,m3,9999),h=a.slice(0,5),o=a.slice(5).reduce((q,x)=>q+x[1],0);return o>0?[...h,['Others',o]]:h})(),act=S.filters[sel.d2],sh=[1,.78,.6,.45,.3,.2];
+mk('cC',{type:'doughnut',data:{labels:t3.map(x=>x[0]),datasets:[{data:t3.map(x=>x[1]),backgroundColor:t3.map((x,i)=>act&&act.size&&!act.has(x[0])?hexA(P[9][i%6],.2):P[9][i%6]),borderColor:P[4],borderWidth:2}]},options:{responsive:true,maintainAspectRatio:false,cutout:'62%',plugins:{legend:{position:'right',labels:{boxWidth:10}}},onClick:(e,el)=>{if(el.length&&t3[el[0].index][0]!=='Others'){const v=t3[el[0].index][0],dd=sel.d2;setTimeout(()=>toggle(dd,v),0)}}}});
+const m4=getM(sel.m4),a4=[...groupBy(rows,r=>dv(r[sel.d3]))].map(([k,g])=>[k,evalM(m4,g)]).sort((a,b)=>b[1]-a[1]),tt=a4.reduce((q,x)=>q+x[1],0),p4=a4.slice(0,10);let cum=0;const cu=p4.map(x=>(cum+=x[1],tt?cum/tt*100:0));
+mk('cD',{type:'bar',data:{labels:p4.map(x=>x[0]),datasets:[{type:'bar',data:p4.map(x=>x[1]),backgroundColor:P[1],borderRadius:3,yAxisID:'y'},{type:'line',data:cu,borderColor:P[2],pointRadius:2,yAxisID:'y1',tension:.2}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:ax,y:{...ax,ticks:{callback:v=>fv(m4,v)}},y1:{position:'right',min:0,max:100,grid:{display:false},ticks:{callback:v=>v+'%'}}}}});
+if(a4.length>=3&&tt>0){let c=0,n80=a4.length;for(let i=0;i<a4.length;i++){c+=a4[i][1];if(c/tt>=.8){n80=i+1;break}}const lo=a4[a4.length-1];ins.push(`${n80} of ${a4.length} ${esc(sel.d3)} values generate 80% of ${esc(m4.name)}.`);ins.push(`<b>Action:</b> weakest ${esc(sel.d3)} is <b>${esc(lo[0])}</b> (${fv(m4,lo[1])}); review its performance drivers before deciding on action.`)}}
+if(dts.length){const m2=getM(sel.m2),g=groupBy(rows,r=>dkey(r[sel.t],sel.g)),pts=[...g].map(([k,a])=>[k,evalM(m2,a)]).sort((a,b)=>a[0]<b[0]?-1:1);
+mk('cB',{type:'line',data:{labels:pts.map(x=>sel.g==='month'&&x[0]===pk0?x[0]+'*':x[0]),datasets:[{data:pts.map(x=>x[1]),borderColor:P[1],backgroundColor:hexA(P[1],.1),fill:true,tension:.3,pointRadius:pts.length>40?0:3}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>' '+fv(m2,c.parsed.y)}}},scales:{x:ax,y:{...ax,ticks:{callback:v=>fv(m2,v)}}}}});
+const ptsF=sel.g==='month'?pts.filter(x=>x[0]!==pk0):pts;if(ptsF.length>=2){const a=ptsF[ptsF.length-1],b=ptsF[ptsF.length-2];if(b[1])ins.push(`${esc(m2.name)} in <b>${a[0]}</b> is ${fv(m2,a[1])}, ${a[1]>=b[1]?'up':'down'} ${Math.abs((a[1]/b[1]-1)*100).toFixed(1)}% vs ${b[0]}.`);const pk=pts.reduce((x,y)=>y[1]>x[1]?y:x);ins.push(`Peak ${sel.g}: <b>${pk[0]}</b> (${fv(m2,pk[1])}).`);if(ptsF.length>=3){const q=ptsF.slice(-3);if(q[2][1]<q[1][1]&&q[1][1]<q[0][1])ins.push(`<b>Action:</b> ${esc(m2.name)} fell for two periods in a row; investigate the drivers.`)}}}
+if(pk0&&dts.length&&sel.g==='month')ins.push(`* ${pk0} is a partial month (data ends ${md.toISOString().slice(0,10)}) and is left out of growth comparisons.`);ins.push(`Showing ${rows.length} of ${all.length} records.`);$('#ins').innerHTML=ins.map(i=>`<li>${i}</li>`).join('')}
+function toggle(c,v){const s=S.filters[c]||(S.filters[c]=new Set());s.has(v)?s.delete(v):s.add(v);renderDash()}
+/* events */
+document.addEventListener('click',e=>{const t=e.target.closest('[data-go],[data-act],[data-addcalc],[data-delcalc],[data-addm],[data-delm],[data-delrel],[data-rm],[data-tact]');if(!t)return;const d=t.dataset;
+if(d.go){const n=+d.go;if(n===6){if(!S.loaded)return;try{if(!S.model)buildModel();initMeasures();S.title=($('#ttl')&&$('#ttl').value)||S.title;showDash()}catch(err){toast('Error: '+err.message)}}else goStep(n)}
+else if(d.tact)tableOp(d.t,d.tact);else if(d.act==='csv')exportCSV();else if(d.act==='print')window.print();else if(d.act==='clear'){S.filters={};S.range=['',''];renderDash()}else if(d.rm!==undefined){S.filters[d.rm].delete(d.v);renderDash()}
+else if(d.addcalc!==undefined){S.calcs.push(window._sc[+d.addcalc]);applyCalcs();r4()}else if(d.delcalc!==undefined){S.calcs.splice(+d.delcalc,1);applyCalcs();r4()}
+else if(d.addm!==undefined){S.measures.push(window._sm[+d.addm]);r4()}else if(d.delm!==undefined){const m=S.measures.splice(+d.delm,1)[0];S.kpiSel=S.kpiSel.filter(x=>x!==m.name);r4()}
+else if(d.delrel!==undefined){S.rels.splice(+d.delrel,1);r3()}});
+document.addEventListener('change',e=>{const t=e.target,d=t.dataset;
+if(d.cop!==undefined){if(t.value)cleanOp(d.t,d.cop,t.value)}else if(d.hdr!==undefined)setHeader(d.hdr,+t.value);else if(d.ren!==undefined)renameCol(d.t,d.ren,t.value.trim());else if(d.pal!==undefined){S.pal=t.value;renderDash()}else if(d.k){S.sel[d.k]=t.value;renderDash()}else if(d.range!==undefined){S.range=S.range||['',''];S.range[+d.range]=t.value;if(S.range[0]&&S.range[1]&&S.range[0]>S.range[1])S.range.reverse();renderDash()}else if(d.slicer!==undefined){t.value?S.filters[d.slicer]=new Set([t.value]):delete S.filters[d.slicer];renderDash()}
+else if(d.rel!==undefined)S.rels[+d.rel].on=t.checked;
+else if(d.kpi!==undefined){S.kpiSel=[...document.querySelectorAll('[data-kpi]:checked')].map(x=>x.dataset.kpi);kcount()}
+else if(t.id==='kn'){S.kpiN=+t.value;S.kpiSel=S.measures.slice(0,S.kpiN).map(m=>m.name);S.title=$('#ttl').value;r5()}
+else if(t.id==='cur'){S.cur=t.value}else if(t.name==='pal'){S.pal=t.value}else if(t.id==='ttl')S.title=t.value;
+else if(t.id==='rf'){$('#rfc').innerHTML=S.tables[t.value].cols.map(c=>`<option>${esc(c)}</option>`).join('')}else if(t.id==='rt'){$('#rtc').innerHTML=S.tables[t.value].cols.map(c=>`<option>${esc(c)}</option>`).join('')}});
+const dz=$('#drop'),fi=$('#file');dz.onclick=()=>fi.click();fi.onchange=()=>{handleFile(fi.files[0]);fi.value=''};
+['dragover','dragenter'].forEach(ev=>dz.addEventListener(ev,e=>{e.preventDefault();dz.classList.add('over')}));['dragleave','drop'].forEach(ev=>dz.addEventListener(ev,e=>{e.preventDefault();dz.classList.remove('over')}));dz.addEventListener('drop',e=>handleFile(e.dataTransfer.files[0]));
+goStep(1);
+</script></body></html>
